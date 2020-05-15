@@ -1,0 +1,25 @@
+---
+ - hosts: all
+   vars:
+    - pokcloud_password: 'testabc123'
+    - pokcloud_pubkey: 'REDACTED root@jupiter-vm1418.pok.stglabs.ibm.com'
+   gather_facts: no
+   remote_user: root
+   become: true
+   
+   tasks:
+   - name: Add a new user named pokcloud
+     user:
+       name: pokcloud
+       shell: /bin/bash
+       password: "{{ pokcloud_password | password_hash('sha512') }}"
+
+   - name: Add pokcloud user to the sudoers
+     copy:
+       dest: "/etc/sudoers.d/pokcloud"
+       content: "pokcloud  ALL=(ALL)  NOPASSWD: ALL"
+   - name: Deploy SSH Key
+     authorized_key: 
+       user: pokcloud
+       key: "{{pokcloud_pubkey}}"
+       state: present
